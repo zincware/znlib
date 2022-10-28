@@ -1,0 +1,51 @@
+[tool.poetry]
+name = "znlib"
+version = "0.1.0"
+description = ""
+authors = ["zincwarecode <zincwarecode@gmail.com>"]
+license = "Apache-2.0"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = ">=3.8,<4.0.0"
+colorama = "^0.4.5"
+zntrack = { version = "^0.4.3", optional = true }
+matplotlib = { version = "^3.6.1", optional = true }
+
+
+[tool.poetry.extras]
+zntrack = ["zntrack", "matplotlib"]
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^7.2.0"
+ruff = "^0.0.86"
+black = "^22.10.0"
+isort = "^5.10.1"
+coverage = "^6.5.0"
+pre-commit = "^2.20.0"
+
+
+[tool.poetry.group.zntrack.dependencies]
+zntrack = "^0.4.3"
+matplotlib = "^3.6.1"
+
+[tool.poetry.urls]
+repository = "https://github.com/zincware/znlib"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.scripts]
+znlib = "znlib.cli:znlib_status"
+
+[tool.black]
+line-length = 90
+preview = true
+
+[tool.isort]
+profile = 'black'
+multi_line_output = 3
+
+[tool.ruff]
+line-length = 90
