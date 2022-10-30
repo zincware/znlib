@@ -1,3 +1,4 @@
+"""The znlib package"""
 import importlib.metadata
 import importlib.util
 

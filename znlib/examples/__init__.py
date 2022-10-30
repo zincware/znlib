@@ -1,3 +1,4 @@
+"""znlib / ZnTrack examples"""
 from znlib.examples.general import (
     AddInputs,
     InputToMetric,

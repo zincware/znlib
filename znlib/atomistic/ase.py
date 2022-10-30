@@ -1,3 +1,4 @@
+"""Atomic Simulation Environment interface for znlib / ZnTrack """
 import collections.abc
 import logging
 import pathlib
@@ -11,7 +12,7 @@ from zntrack.core import ZnTrackOption
 
 log = logging.getLogger(__name__)
 
-ATOMS_LST = typing.List[ase.Atoms]
+AtomsList = typing.List[ase.Atoms]
 
 
 class LazyAtomsSequence(collections.abc.Sequence):
@@ -20,17 +21,17 @@ class LazyAtomsSequence(collections.abc.Sequence):
     This sequence does not support modifications but only reading values from it.
     """
 
-    def __init__(self, db: str, threshold: int = 100):
+    def __init__(self, database: str, threshold: int = 100):
         """Default __init__
 
         Parameters
         ----------
-        db: file
+        database: file
             The database to read from
         threshold: int
             Minimum number of atoms to read at once to print tqdm loading bars
         """
-        self._db = db
+        self._database = database
         self._threshold = threshold
         self.__dict__["atoms"]: typing.Dict[int, ase.Atoms] = {}
         self._len = None
@@ -48,14 +49,14 @@ class LazyAtomsSequence(collections.abc.Sequence):
         """
         indices = [x for x in indices if x not in self.__dict__["atoms"]]
 
-        with ase.db.connect(self._db) as db:
+        with ase.db.connect(self._database) as database:
             for key in tqdm.tqdm(
                 indices,
                 disable=len(indices) < self._threshold,
                 ncols=120,
-                desc=f"Loading atoms from {self._db}",
+                desc=f"Loading atoms from {self._database}",
             ):
-                self.__dict__["atoms"][key] = db[key + 1].toatoms()
+                self.__dict__["atoms"][key] = database[key + 1].toatoms()
 
     def __iter__(self):
         """Enable iterating over the sequence. This will load all data at once"""
@@ -63,7 +64,7 @@ class LazyAtomsSequence(collections.abc.Sequence):
         for idx in range(len(self)):
             yield self[idx]
 
-    def __getitem__(self, item) -> typing.Union[ase.Atoms, ATOMS_LST]:
+    def __getitem__(self, item) -> typing.Union[ase.Atoms, AtomsList]:
         """Get atoms
 
         Parameters
@@ -98,16 +99,16 @@ class LazyAtomsSequence(collections.abc.Sequence):
         the db is not expected to change during the lifetime of this class
         """
         if self._len is None:
-            with ase.db.connect(self._db) as db:
+            with ase.db.connect(self._database) as db:
                 self._len = len(db)
         return self._len
 
     def __repr__(self):
-        return f"{self.__class__.__name__}(db={self._db})"
+        return f"{self.__class__.__name__}(db={self._database})"
 
-    def tolist(self) -> ATOMS_LST:
+    def tolist(self) -> AtomsList:
         """Convert sequence to a list of atoms objects"""
-        return [x for x in self]
+        return list(self)
 
 
 class ZnAtoms(ZnTrackOption):
@@ -122,7 +123,7 @@ class ZnAtoms(ZnTrackOption):
 
     def save(self, instance):
         """Save value with ase.db.connect"""
-        atoms: ATOMS_LST = self.__get__(instance, self.owner)
+        atoms: AtomsList = getattr(instance, self.name)
         file = self.get_filename(instance)
         # file.parent.mkdir(exist_ok=True, parents=True)
         with ase.db.connect(file, append=False) as db:
@@ -131,7 +132,9 @@ class ZnAtoms(ZnTrackOption):
 
     def get_data_from_files(self, instance) -> LazyAtomsSequence:
         """Load value with ase.db.connect"""
-        return LazyAtomsSequence(db=self.get_filename(instance).resolve().as_posix())
+        return LazyAtomsSequence(
+            database=self.get_filename(instance).resolve().as_posix()
+        )
 
 
 class FileToASE(Node):
@@ -143,7 +146,7 @@ class FileToASE(Node):
     file: typing.Union[str, pathlib.Path] = dvc.deps()
     frames_to_read: int = zn.params(None)
 
-    atoms: ATOMS_LST = ZnAtoms()
+    atoms: AtomsList = ZnAtoms()
 
     def post_init(self):
         if not self.is_loaded:

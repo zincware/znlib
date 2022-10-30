@@ -6,6 +6,7 @@ from zntrack import Node, zn
 
 
 def plot_sampling(ax, coordinates, n_points, estimate):
+    """Plot a quarter of a circle with the sampled points"""
     circle = plt.Circle((0, 0), 1, fill=False, linewidth=3, edgecolor="k", zorder=10)
 
     ax.set_xlim(-0.0, 1.0)
@@ -20,7 +21,7 @@ def plot_sampling(ax, coordinates, n_points, estimate):
     inner_points = np.array(list(filter(lambda x: np.linalg.norm(x) <= 1, coordinates)))
     ax.plot(inner_points[:, 0], inner_points[:, 1], "r.")
     ax.add_patch(circle)
-    ax.set_title(f"N: {n_points} ; $\pi$ = {estimate}")
+    ax.set_title(rf"N: {n_points} ; $\pi$ = {estimate}")
     ax.set_aspect("equal")
 
 
@@ -34,6 +35,7 @@ class MonteCarloPiEstimator(Node):
     estimate: float = zn.metrics()
 
     def run(self):
+        """Compute pi using MC"""
         np.random.seed(self.seed)
         self.coordinates = np.random.random(size=(self.n_points, 2))
         radial_values = np.linalg.norm(self.coordinates, axis=1)
@@ -41,6 +43,7 @@ class MonteCarloPiEstimator(Node):
         self.estimate = 4 * n_circle_points / self.n_points
 
     def plot(self, ax):
+        """Create a plot of the sampled coordinates"""
         plot_sampling(
             ax,
             coordinates=self.coordinates,

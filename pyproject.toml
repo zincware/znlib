@@ -26,6 +26,7 @@ isort = "^5.10.1"
 coverage = "^6.5.0"
 pre-commit = "^2.20.0"
 jupyterlab = "^3.5.0"
+pylint = "^2.15.5"
 
 
 [tool.poetry.group.zntrack.dependencies]

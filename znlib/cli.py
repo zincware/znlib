@@ -1,3 +1,4 @@
+"""Command Line Interface"""
 import dataclasses
 import importlib.metadata
 from importlib.util import find_spec
@@ -47,5 +48,5 @@ def znlib_status():
             "symdet",
         ]
     )
-
-    [ZnModules(x) for x in packages]
+    for package in packages:
+        ZnModules(package)

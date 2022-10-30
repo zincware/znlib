@@ -12,10 +12,10 @@ def test_AddData(proj_path, tetraeder_test_traj):
     shutil.copy(traj_file, ".")
 
     subprocess.check_call(["dvc", "add", traj_file.name])
-    data = znlib.atomistic.ase.FileToASE(file=traj_file.name)
+    data = znlib.atomistic.FileToASE(file=traj_file.name)
     data.run_and_save()
 
-    loaded_data = znlib.atomistic.ase.FileToASE.load()
+    loaded_data = znlib.atomistic.FileToASE.load()
 
     assert isinstance(loaded_data.atoms, znlib.atomistic.ase.LazyAtomsSequence)
     assert isinstance(loaded_data.atoms[0], ase.Atoms)
