@@ -1,3 +1,5 @@
+import subprocess
+
 import pytest
 
 from znlib import examples
@@ -51,3 +53,20 @@ def test_ComputeCircleArea(proj_path):
     area.run_and_save()
 
     assert area.load().area == pytest.approx(3.1415, abs=0.1)
+
+
+def test_ComputeMeanStd(proj_path):
+    nodes = []
+    for idx in range(7):
+        node = examples.RandomNumber(seed=idx, name=f"node_{idx}")
+        node.write_graph()
+        nodes.append(node)
+
+    mean = examples.ComputeMeanStd(inputs=nodes)
+    mean.write_graph()
+
+    subprocess.check_call(["dvc", "repro"])
+
+    mean = mean.load()
+
+    assert mean.mean == pytest.approx(0.5, abs=0.1)

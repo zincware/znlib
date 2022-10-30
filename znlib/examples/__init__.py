@@ -1,9 +1,11 @@
 """znlib / ZnTrack examples"""
 from znlib.examples.general import (
     AddInputs,
+    ComputeMeanStd,
     InputToMetric,
     InputToOutput,
     InputToOutputMeta,
+    RandomNumber,
 )
 from znlib.examples.mc_pi_estimator import ComputeCircleArea, MonteCarloPiEstimator
 
@@ -14,4 +16,6 @@ __all__ = [
     "AddInputs",
     "MonteCarloPiEstimator",
     "ComputeCircleArea",
+    "RandomNumber",
+    "ComputeMeanStd",
 ]
