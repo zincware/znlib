@@ -2536,7 +2536,7 @@ zntrack = ["zntrack", "matplotlib"]
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.8,<4.0.0"
-content-hash = "1b048bca5a02d530589e3e61e21657a978f34bb842794b6eba18f3694f04ede7"
+content-hash = "69e6290975e06dbf21c0375943ce2e24e0e54f04bbcf996f10acf8b6e97a25f9"
 
 [metadata.files]
 aiohttp = [
