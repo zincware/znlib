@@ -1,3 +1,4 @@
+"""Command Line Interface"""
 import dataclasses
 import importlib.metadata
 from importlib.util import find_spec
@@ -33,13 +34,19 @@ def znlib_status():
     """All zincware packages that should be listed"""
     print(f"Available {Fore.LIGHTBLUE_EX}zincware{Style.RESET_ALL} packages:")
 
-    ZnModules(name="znlib")
-    ZnModules(name="zntrack")
-    ZnModules(name="mdsuite")
-    ZnModules(name="znjson")
-    ZnModules(name="zninit")
-    ZnModules(name="dot4dict")
-    ZnModules(name="znipy")
-    ZnModules(name="supercharge")
-    ZnModules(name="znvis")
-    ZnModules(name="symdet")
+    packages = sorted(
+        [
+            "znlib",
+            "zntrack",
+            "mdsuite",
+            "znjson",
+            "zninit",
+            "dot4dict",
+            "znipy",
+            "supercharge",
+            "znvis",
+            "symdet",
+        ]
+    )
+    for package in packages:
+        ZnModules(package)
