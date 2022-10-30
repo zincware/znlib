@@ -1,0 +1,9 @@
+log             {{ log_file }} append
+
+#############################
+### Configure system type ###
+#############################
+
+units           {{ system.units }}
+boundary        {{ system.boundary }}
+atom_style      {{ system.atom_style }}

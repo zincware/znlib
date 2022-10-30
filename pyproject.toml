@@ -5,6 +5,7 @@ description = ""
 authors = ["zincwarecode <zincwarecode@gmail.com>"]
 license = "Apache-2.0"
 readme = "README.md"
+include = ["znlib/data"]
 
 [tool.poetry.dependencies]
 python = ">=3.8,<4.0.0"
@@ -12,11 +13,12 @@ colorama = "^0.4.5"
 zntrack = { version = "^0.4.3", optional = true }
 matplotlib = { version = "^3.6.1", optional = true }
 ase = { version = "^3.22.1", optional = true }
+jinja2 = { version = "^3.1.2", optional = true }
 
 
 [tool.poetry.extras]
 zntrack = ["zntrack", "matplotlib"]
-atomistic = ["ase", "zntrack"]
+atomistic = ["ase", "zntrack", "jinja2"]
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.2.0"
@@ -36,6 +38,7 @@ matplotlib = "^3.6.1"
 
 [tool.poetry.group.atomistic.dependencies]
 ase = "^3.22.1"
+jinja2 = "^3.1.2"
 
 [tool.poetry.urls]
 repository = "https://github.com/zincware/znlib"
