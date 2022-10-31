@@ -5,7 +5,10 @@ import pathlib
 import typing
 
 import ase.db
+import ase.geometry.analysis
 import ase.io
+import numpy as np
+import pandas as pd
 import tqdm
 from zntrack import Node, dvc, utils, zn
 from zntrack.core import ZnTrackOption
@@ -138,7 +141,7 @@ class ZnAtoms(ZnTrackOption):
 
 
 class FileToASE(Node):
-    """Read a ASE compatible file and make it available as list of atoms objects
+    """Read an ASE compatible file and make it available as list of atoms objects
 
     The atoms object is a LazyAtomsSequence
     """
@@ -168,3 +171,38 @@ class FileToASE(Node):
                 if config >= self.frames_to_read:
                     break
             self.atoms.append(atom)
+
+
+class RadialDistributionFunction(Node):
+    """Compute a RadialDistributionFunction from a list of ase.Atoms
+
+    Attributes
+    ----------
+    rmax: float
+            Maximum distance of RDF.
+    nbins: int
+            Number of bins to divide RDF.
+
+    elements: str/int/list/tuple
+            Make partial RDFs. If elements is *None*, a full RDF is calculated. If
+            elements is an *integer* or a *list/tuple of integers*, only those atoms will
+            contribute to the RDF (like a mask). If elements is a *string* or a
+            *list/tuple of strings*, only Atoms of those elements will contribute.
+    """
+
+    rmax: float = zn.params()
+    nbins: int = zn.params()
+    elements: str = zn.params(None)
+
+    plot: pd.DataFrame = zn.plots(x="x", x_label=r"distance r", y_label=r"RDF g(r)")
+
+    data: AtomsList = zn.deps()
+
+    def run(self):
+        analysis = ase.geometry.analysis.Analysis(list(self.data))
+        data = analysis.get_rdf(rmax=self.rmax, nbins=self.nbins, elements=self.elements)
+
+        self.plot = pd.DataFrame(
+            {"x": np.linspace(0, self.rmax, self.nbins), "y": np.mean(data, axis=0)}
+        )
+        self.plot.set_index("x")
