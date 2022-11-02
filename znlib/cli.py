@@ -46,6 +46,7 @@ def znlib_status():
             "supercharge",
             "znvis",
             "symdet",
+            "aaargs",
         ]
     )
     for package in packages:
