@@ -15,3 +15,8 @@ if importlib.util.find_spec("ase") is not None:
     from znlib import atomistic  # noqa: F401
 
     __all__.append("ase")
+
+if importlib.util.find_spec("tensorflow") is not None:
+    from znlib import tensorflow  # noqa: F401
+
+    __all__.append("tensorflow")
