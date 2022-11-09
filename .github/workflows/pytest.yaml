@@ -55,4 +55,4 @@ jobs:
           which pytest
           which poetry
           which dvc
-          poetry run pytest
+          pytest
