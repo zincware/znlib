@@ -43,6 +43,7 @@ jobs:
           which cp2k.psmp
           poetry config virtualenvs.create false
           poetry install --no-interaction
+          poetry update --no-interaction
       - name: Setup git user
         run: |
           git config --global user.name "John Doe"
@@ -51,4 +52,7 @@ jobs:
       - name: Pytest
         shell: bash -l {0}
         run: |
+          which python
+          which pytest
+          which poetry
           poetry run pytest
