@@ -1,8 +1,10 @@
+import os
 import pathlib
 import shutil
 import subprocess
 
-import ase
+import ase.io
+import yaml
 
 import znlib
 
@@ -66,3 +68,39 @@ def test_RadialDistributionFunction(proj_path, tetraeder_test_traj):
     assert sum(rdf_h.plot["y"]) > 0.0
     # assert sum(rdf_c.plot["y"]) > 0.0 # for the given tetraeder this is actually 0
     assert sum(rdf_ch.plot["y"]) > 0.0
+
+
+def test_u_CP2KNode(cp2k_si8_input, atoms_si8, tmp_path, BASIS_SET, GTH_POTENTIALS):
+    os.chdir(tmp_path)
+    shutil.copy(BASIS_SET, ".")
+    shutil.copy(GTH_POTENTIALS, ".")
+    input_file = pathlib.Path("cp2k.inp")
+    input_file.write_text(yaml.safe_dump(cp2k_si8_input))
+
+    cp2k_node = znlib.atomistic.CP2KNode(input_file=input_file, atoms=[atoms_si8])
+
+    cp2k_node.run()
+
+    assert cp2k_node.outputs[0].get_potential_energy() < 0.0
+
+
+def test_i_CP2KNode(proj_path, cp2k_si8_input, atoms_si8, BASIS_SET, GTH_POTENTIALS):
+    shutil.copy(BASIS_SET, ".")
+    shutil.copy(GTH_POTENTIALS, ".")
+    input_file = pathlib.Path("cp2k.inp")
+    input_file.write_text(yaml.safe_dump(cp2k_si8_input))
+
+    configuration = "conf.extxyz"
+
+    ase.io.write(configuration, atoms_si8)
+    data = znlib.atomistic.FileToASE(file=configuration)
+    cp2k_node = znlib.atomistic.CP2KNode(
+        input_file=input_file,
+        atoms=data @ "atoms",
+        dependencies=[BASIS_SET.name, GTH_POTENTIALS.name],
+    )
+
+    data.write_graph(run=True)
+    cp2k_node.write_graph(run=True)
+
+    assert cp2k_node.load().outputs[0].get_potential_energy() < 0.0

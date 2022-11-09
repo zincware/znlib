@@ -12,6 +12,8 @@ import subprocess
 import ase.io
 import pytest
 
+CWD = pathlib.Path.cwd()
+
 
 @pytest.fixture
 def proj_path(tmp_path, request) -> pathlib.Path:
@@ -55,3 +57,74 @@ def tetraeder_test_traj(tmp_path_factory) -> str:
     file = temporary_path / "tetraeder.extxyz"
     ase.io.write(file, atoms)
     return file.resolve().as_posix()
+
+
+@pytest.fixture()
+def atoms_si8() -> ase.Atoms:
+    return ase.Atoms(
+        "Si8",
+        positions=[
+            (0.000000000, 0.000000000, 0.000000000),
+            (0.000000000, 2.715348700, 2.715348700),
+            (2.715348700, 2.715348700, 0.000000000),
+            (2.715348700, 0.000000000, 2.715348700),
+            (4.073023100, 1.357674400, 4.073023100),
+            (1.357674400, 1.357674400, 1.357674400),
+            (1.357674400, 4.073023100, 4.073023100),
+            (4.073023100, 4.073023100, 1.357674400),
+        ],
+        cell=(5.430697500, 5.430697500, 5.430697500),
+    )
+
+
+@pytest.fixture()
+def cp2k_si8_input() -> dict:
+    return {
+        "global": {
+            "project_name": "Si_bulk8",
+            "run_type": "energy_force",
+            "print_level": "LOW",
+        },
+        "force_eval": {
+            "subsys": {
+                "kind": {
+                    "Si": {
+                        "element": "Si",
+                        "basis_set": "DZVP-GTH-PADE",
+                        "potential": "GTH-PADE-q4",
+                    }
+                },
+            },
+            "DFT": {
+                "QS": {"eps_default": "1e-10"},
+                "mgrid": {"ngrids": 4, "cutoff": 300.0, "rel_cutoff": 60.0},
+                "XC": {"xc_functional": {"_": "PADE"}},
+                "SCF": {
+                    "diagonalization": {"_": True, "algorithm": "standard"},
+                    "mixing": {
+                        "_": True,
+                        "method": "broyden_mixing",
+                        "alpha": 0.4,
+                        "nbuffer": 8,
+                    },
+                    "scf_guess": "atomic",
+                    "eps_scf": "1e-07",
+                    "max_scf": 5,
+                },
+                "basis_set_file_name": "BASIS_SET",
+                "potential_file_name": "GTH_POTENTIALS",
+            },
+            "print": {"forces": {"_": True}},
+            "method": "quickstep",
+        },
+    }
+
+
+@pytest.fixture()
+def BASIS_SET() -> pathlib.Path:
+    return CWD / "static" / "BASIS_SET"
+
+
+@pytest.fixture()
+def GTH_POTENTIALS() -> pathlib.Path:
+    return CWD / "static" / "GTH_POTENTIALS"
