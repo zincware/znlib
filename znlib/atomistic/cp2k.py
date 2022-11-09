@@ -52,7 +52,7 @@ class CP2KNode(Node):
     dependencies = dvc.deps(None)
     wfn_restart = dvc.deps(None)
 
-    stress_tensor: bool = zn.params(True)
+    stress_tensor: bool = True
 
     @staticmethod
     def _remove_unwanted_entries(data):
