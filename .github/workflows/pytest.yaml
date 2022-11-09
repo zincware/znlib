@@ -37,8 +37,9 @@ jobs:
       - name: Check CP2K shell
         shell: bash -l {0}
         run: |
-          which mpirun
+          which python
           which cp2k_shell.psmp
+          which mpirun
           timeout -s 9 5 mpirun cp2k_shell.psmp
       - name: Install Poetry
         uses: abatilo/actions-poetry@v2
