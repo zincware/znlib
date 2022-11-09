@@ -87,7 +87,7 @@ def test_u_CP2KNode(cp2k_si8_input, atoms_si8, tmp_path, BASIS_SET, GTH_POTENTIA
 def test_i_CP2KNode(proj_path, cp2k_si8_input, atoms_si8, BASIS_SET, GTH_POTENTIALS):
     shutil.copy(BASIS_SET, ".")
     shutil.copy(GTH_POTENTIALS, ".")
-    input_file = pathlib.Path("cp2k.inp")
+    input_file = pathlib.Path("cp2k.yaml")
     input_file.write_text(yaml.safe_dump(cp2k_si8_input))
 
     configuration = "conf.extxyz"
