@@ -12,7 +12,7 @@ import subprocess
 import ase.io
 import pytest
 
-CWD = pathlib.Path.cwd()
+CWD = pathlib.Path(__file__).parent
 
 
 @pytest.fixture
