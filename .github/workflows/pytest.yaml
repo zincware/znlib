@@ -23,23 +23,34 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
-      - uses: iterative/setup-cml@v1
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v2
-        with:
-          python-version: ${{ matrix.python-version }}
-      - name: Install Poetry
-        uses: abatilo/actions-poetry@v2
-        with:
-          poetry-version: 1.2.2
-      - name: Install package
-        run: |
-          poetry install --no-interaction
       - name: Setup git user
         run: |
           git config --global user.name "John Doe"
           git config --global user.email johndoe@example.com
           git config --global init.defaultBranch "main"
-      - name: Pytest
+      - uses: mpi4py/setup-mpi@v1
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: conda-incubator/setup-miniconda@v2
+        with:
+           auto-update-conda: true
+           activate-environment: znlib
+           python-version: ${{ matrix.python-version }}
+      - name: Install CP2K
+        shell: bash -l {0}
         run: |
-          poetry run pytest
+          conda install -c conda-forge cp2k
+          sudo apt update
+          sudo apt install -y libopenmpi-dev
+      - name: Install Poetry
+        uses: abatilo/actions-poetry@v2
+        with:
+          poetry-version: 1.2.2
+      - name: Install package
+        shell: bash -l {0}
+        run: |
+          poetry config virtualenvs.create false
+          poetry install --no-interaction
+      - name: Pytest
+        shell: bash -l {0}
+        run: |
+          pytest
