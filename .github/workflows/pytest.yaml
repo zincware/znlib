@@ -27,6 +27,7 @@ jobs:
         uses: conda-incubator/setup-miniconda@v2
         with:
            auto-update-conda: true
+           activate-environment: znlib
            python-version: ${{ matrix.python-version }}
       - name: Install CP2K
         shell: bash -l {0}
@@ -36,6 +37,7 @@ jobs:
         with:
           poetry-version: 1.2.2
       - name: Install package
+        shell: bash -l {0}
         run: |
           which python
           which cp2k.psmp
@@ -47,5 +49,6 @@ jobs:
           git config --global user.email johndoe@example.com
           git config --global init.defaultBranch "main"
       - name: Pytest
+        shell: bash -l {0}
         run: |
           poetry run pytest
