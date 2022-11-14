@@ -70,3 +70,9 @@ def test_ComputeMeanStd(proj_path):
     mean = mean.load()
 
     assert mean.mean == pytest.approx(0.5, abs=0.1)
+
+
+def test_TimeToMetric():
+    node = examples.TimeToMetric()
+    node.run()
+    assert node.time > 0.0
