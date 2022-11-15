@@ -44,7 +44,7 @@ class CP2KNode(Node):
     input_file: str = dvc.params()
     # e.g. "env OMP_NUM_THREADS=2 mpiexec -np 4 cp2k_shell.psmp"
     cp2k_shell: str = meta.Text("cp2k_shell.psmp")
-    label: str = meta.Text("cp2k")
+    label: str = meta.Text("ase_cp2k")
 
     outputs: AtomsList = ZnAtoms()
 
