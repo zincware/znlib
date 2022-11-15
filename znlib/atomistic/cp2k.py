@@ -44,6 +44,7 @@ class CP2KNode(Node):
     input_file: str = dvc.params()
     # e.g. "env OMP_NUM_THREADS=2 mpiexec -np 4 cp2k_shell.psmp"
     cp2k_shell: str = meta.Text("cp2k_shell.psmp")
+    label: str = meta.Text("cp2k")
 
     outputs: AtomsList = ZnAtoms()
 
@@ -84,34 +85,32 @@ class CP2KNode(Node):
             stress_tensor=self.stress_tensor,
             xc=None,
             print_level=None,
-            label="cp2k",
+            label=self.label,
         )
 
     def _move_cp2k_outs(self):
         """The CP2K command is executed in the cwd.
         Output files will be moved to NWD afterward."""
-        for file in pathlib.Path(".").glob("cp2k-RESTART.wfn*"):
+        for file in pathlib.Path(".").glob(f"{self.label}*"):
             file.rename(self.cp2k_output_dir / file)
-
-        cp2k_inp = pathlib.Path("cp2k.inp")
-        cp2k_inp.rename(self.cp2k_output_dir / cp2k_inp)
-
-        cp2k_out = pathlib.Path("cp2k.out")
-        cp2k_out.rename(self.cp2k_output_dir / cp2k_out)
 
     @property
     def wfn_restart_file(self) -> pathlib.Path:
         # TODO if the file does not work return path to one of the backup files
-        return self.cp2k_output_dir / "cp2k-RESTART.wfn"
+        return self.cp2k_output_dir / f"{self.label}-RESTART.wfn"
 
     def run(self):
-        if self.cp2k_output_dir.exists():
-            shutil.rmtree(self.cp2k_output_dir)
+        # ! assert there are no files starting with cp2k_...
+        # ! run cp2k
+        # ! Do checkpoints?!?
+        # ! move outputs
+        # if self.cp2k_output_dir.exists():
+        #     shutil.rmtree(self.cp2k_output_dir)
         self.cp2k_output_dir.mkdir()
 
         if self.wfn_restart is not None:
             # TODO maybe rename the file otherwise?
-            assert pathlib.Path(self.wfn_restart).name == "cp2k-RESTART.wfn"
+            assert pathlib.Path(self.wfn_restart).name == f"{self.label}-RESTART.wfn"
             shutil.copy(self.wfn_restart, ".")
 
         with open(self.input_file, "r") as file:
@@ -121,11 +120,13 @@ class CP2KNode(Node):
 
         cp2k_input_script = "\n".join(CP2KInputGenerator().line_iter(cp2k_input_dict))
 
+        calc = self.get_calculator(cp2k_input_script)
+
         self.outputs = []
         for atom in self.atoms:
             assert isinstance(atom, ase.Atoms)
             atom = atom.copy()
-            atom.calc = self.get_calculator(cp2k_input_script)
+            atom.calc = calc
             atom.get_potential_energy()
             self.outputs.append(atom)
 
