@@ -1,5 +1,7 @@
 """Example Nodes that are categorized as general nodes."""
+import datetime
 import random
+import time
 import typing
 
 import numpy as np
@@ -71,3 +73,25 @@ class ComputeMeanStd(Node):
         numbers = [x.number for x in self.inputs]
         self.mean = np.mean(numbers)
         self.std = np.std(numbers)
+
+
+class TimeToMetric(Node):
+    """Use Datetime to save the current time
+
+    This can e.g. be useful to measure parallel execution tasks.
+
+    Parameters
+    ----------
+    time: float, Time to wait before storing the current time.
+    strftime: text: Format in which to store the time. Must be convertible to float.
+
+    """
+
+    time = zn.metrics()
+    sleep: float = zn.params(0.0)
+
+    strftime: str = meta.Text("%H%M%S.%f")
+
+    def run(self):
+        time.sleep(self.sleep)
+        self.time = float(datetime.datetime.now().strftime(self.strftime))
