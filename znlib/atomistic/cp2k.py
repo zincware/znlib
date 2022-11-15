@@ -94,7 +94,8 @@ class CP2KNode(Node):
         # TODO if the file does not work return path to one of the backup files
         return self.cp2k_output_dir / "cp2k-RESTART.wfn"
 
-    def load(self, **kwargs):
+    @classmethod
+    def load(cls, **kwargs):
         """Disable Lazy Loading for now
 
         This is currently required, because lazy loading and changing directory
@@ -102,7 +103,8 @@ class CP2KNode(Node):
 
         See https://github.com/zincware/ZnTrack/issues/277
         """
-        return super().load(lazy=False, **kwargs)
+        kwargs["lazy"] = False
+        return super().load(**kwargs)
 
     def run(self):
         self.cp2k_output_dir.mkdir()
