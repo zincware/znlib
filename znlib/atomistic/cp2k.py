@@ -1,6 +1,8 @@
 import contextlib
+import os
 import pathlib
 import shutil
+import typing
 
 import ase.calculators.cp2k
 import yaml
@@ -20,13 +22,13 @@ class CP2KNode(Node):
     atoms: AtomsList
         The ASE atoms objects to use. Typically, this is
         'znlib.atomistic.FileToASE() @ "atoms"' or some other Node output.
-    input_file: str
+    input_file: str|Path
         A yaml file as input for CP2k. A good way to generate is by using
         'fromcp2k --format yaml cp2k.inp > cp2k.yaml' from the cp2k-input-tools library.
     dependencies: list[str]
         Files such as the BASIS_SET_FILE or POTENTIAL_FILE should be passed as a
         dependency to check for changes in them.
-    wfn_restart: str
+    wfn_restart: str|Path
         Typically, this would be 'CP2KNode().wfn_restart_file' from another Node.
         But it can also be another CP2K wavefunction restart file. Make sure to use
         'scf_guess: restart' to make use of it.
@@ -41,13 +43,13 @@ class CP2KNode(Node):
     """
 
     atoms: AtomsList = zn.deps()
-    input_file: str = dvc.params()
+    input_file: typing.Union[str, pathlib.Path] = dvc.params()
     # e.g. "env OMP_NUM_THREADS=2 mpiexec -np 4 cp2k_shell.psmp"
     cp2k_shell: str = meta.Text("cp2k_shell.psmp")
 
     outputs: AtomsList = ZnAtoms()
 
-    cp2k_output_dir: pathlib.Path = dvc.outs(utils.nwd / "cp2k")
+    cp2k_output_dir: pathlib.Path = dvc.outs(utils.nwd / ".")
 
     dependencies = dvc.deps(None)
     wfn_restart = dvc.deps(None)
@@ -87,27 +89,18 @@ class CP2KNode(Node):
             label="cp2k",
         )
 
-    def _move_cp2k_outs(self):
-        """The CP2K command is executed in the cwd.
-        Output files will be moved to NWD afterward."""
-        for file in pathlib.Path(".").glob("cp2k-RESTART.wfn*"):
-            file.rename(self.cp2k_output_dir / file)
-
-        cp2k_inp = pathlib.Path("cp2k.inp")
-        cp2k_inp.rename(self.cp2k_output_dir / cp2k_inp)
-
-        cp2k_out = pathlib.Path("cp2k.out")
-        cp2k_out.rename(self.cp2k_output_dir / cp2k_out)
-
     @property
     def wfn_restart_file(self) -> pathlib.Path:
         # TODO if the file does not work return path to one of the backup files
         return self.cp2k_output_dir / "cp2k-RESTART.wfn"
 
     def run(self):
-        if self.cp2k_output_dir.exists():
-            shutil.rmtree(self.cp2k_output_dir)
         self.cp2k_output_dir.mkdir()
+        self.input_file = pathlib.Path(self.input_file).resolve()
+        if self.wfn_restart is not None:
+            self.wfn_restart = pathlib.Path(self.wfn_restart).resolve()
+
+        os.chdir(self.cp2k_output_dir)
 
         if self.wfn_restart is not None:
             # TODO maybe rename the file otherwise?
@@ -128,5 +121,3 @@ class CP2KNode(Node):
             atom.calc = self.get_calculator(cp2k_input_script)
             atom.get_potential_energy()
             self.outputs.append(atom)
-
-        self._move_cp2k_outs()
