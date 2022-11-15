@@ -49,7 +49,7 @@ class CP2KNode(Node):
 
     outputs: AtomsList = ZnAtoms()
 
-    cp2k_output_dir: pathlib.Path = dvc.outs(utils.nwd / ".")
+    cp2k_output_dir: pathlib.Path = dvc.outs(utils.nwd / "cp2k")
 
     dependencies = dvc.deps(None)
     wfn_restart = dvc.deps(None)
