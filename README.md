@@ -1,3 +1,8 @@
+[![Coverage Status](https://coveralls.io/repos/github/zincware/znlib/badge.svg?branch=main)](https://coveralls.io/github/zincware/znlib?branch=main)
+![PyTest](https://github.com/zincware/znlib/actions/workflows/pytest.yaml/badge.svg)
+[![PyPI version](https://badge.fury.io/py/znlib.svg)](https://badge.fury.io/py/znlib)
+[![ZnTrack](https://img.shields.io/badge/Powered%20by-ZnTrack-%23007CB0)](https://zntrack.readthedocs.io/en/latest/)
+
 # znlib
 This package provides you with a CLI to list your installed zincware libraries.
 

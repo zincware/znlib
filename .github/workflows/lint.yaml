@@ -1,0 +1,32 @@
+name: Check coding style
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  black:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Black Check
+        uses: psf/black@stable
+        with:
+          version: "22.10.0"
+
+  isort:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+        with:
+          python-version: '3.x'
+      - name: install isort and ruff
+        run: |
+          pip install isort==5.10.1
+          pip install ruff
+      - name: run isort
+        run: |
+          isort --check-only --quiet .
+      - name: run Ruff
+        run: ruff .
