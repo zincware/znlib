@@ -6,6 +6,7 @@ from znlib.examples.general import (
     InputToOutput,
     InputToOutputMeta,
     RandomNumber,
+    ReadTextFromFile,
     TimeToMetric,
 )
 from znlib.examples.mc_pi_estimator import ComputeCircleArea, MonteCarloPiEstimator
@@ -20,4 +21,5 @@ __all__ = [
     "RandomNumber",
     "ComputeMeanStd",
     "TimeToMetric",
+    "ReadTextFromFile",
 ]
