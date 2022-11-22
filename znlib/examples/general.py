@@ -1,11 +1,12 @@
 """Example Nodes that are categorized as general nodes."""
 import datetime
+import pathlib
 import random
 import time
 import typing
 
 import numpy as np
-from zntrack import Node, meta, zn
+from zntrack import Node, dvc, meta, zn
 
 
 class InputToOutput(Node):
@@ -95,3 +96,14 @@ class TimeToMetric(Node):
     def run(self):
         time.sleep(self.sleep)
         self.time = float(datetime.datetime.now().strftime(self.strftime))
+
+
+class ReadTextFromFile(Node):
+    file: str = dvc.deps()
+    text: str = zn.outs()
+
+    def run(self):
+        self.text = pathlib.Path(self.file).read_text()
+
+    def write_to_file(self, text="Hello World"):
+        pathlib.Path(self.file).write_text(text)

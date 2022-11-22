@@ -76,3 +76,14 @@ def test_TimeToMetric():
     node = examples.TimeToMetric()
     node.run()
     assert node.time > 0.0
+
+
+def test_ReadTextFromFile(proj_path):
+    node = examples.ReadTextFromFile(file="data.txt")
+    node.write_to_file()
+    node.write_graph()
+
+    subprocess.check_call(["dvc", "repro"])
+
+    node = node.load()
+    assert node.text == "Hello World"
