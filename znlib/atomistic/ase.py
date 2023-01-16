@@ -1,9 +1,10 @@
 """Atomic Simulation Environment interface for znlib / ZnTrack """
-import collections.abc
+import contextlib
 import logging
 import pathlib
 import typing
 
+import ase.calculators.singlepoint
 import ase.db
 import ase.geometry.analysis
 import ase.io
@@ -13,20 +14,16 @@ import tqdm
 from zntrack import Node, dvc, utils, zn
 from zntrack.core import ZnTrackOption
 
+import znlib.utils
+
 log = logging.getLogger(__name__)
 
 AtomsList = typing.List[ase.Atoms]
 
 
-class LazyAtomsSequence(collections.abc.Sequence):
-    """Sequence that loads atoms objects from ase Database only when accessed
-
-    This sequence does not support modifications but only reading values from it.
-    """
-
+class ASEAtomsFromDB:
     def __init__(self, database: str, threshold: int = 100):
         """Default __init__
-
         Parameters
         ----------
         database: file
@@ -34,23 +31,23 @@ class LazyAtomsSequence(collections.abc.Sequence):
         threshold: int
             Minimum number of atoms to read at once to print tqdm loading bars
         """
-        self._database = database
+        self._database = pathlib.Path(database)
         self._threshold = threshold
-        self.__dict__["atoms"]: typing.Dict[int, ase.Atoms] = {}
         self._len = None
 
-    def _update_state_from_db(self, indices: list):
-        """Load requested atoms into memory
-
-        If the atoms are not present in __dict__ they will be read from db
-
+    def __getitem__(self, item) -> typing.Union[ase.Atoms, AtomsList]:
+        """Get atoms
         Parameters
         ----------
-        indices: list
-            The indices of the atoms. Indices are 0based and will be converted to 1 based
-            when reading from the ase db.
+        item: int | list | slice
+            The identifier of the requested atoms to return
+        Returns
+        -------
+        Atoms | list[Atoms]
         """
-        indices = [x for x in indices if x not in self.__dict__["atoms"]]
+
+        indices = znlib.utils.lazy.item_to_list(item, len(self))
+        atoms = []
 
         with ase.db.connect(self._database) as database:
             for key in tqdm.tqdm(
@@ -59,43 +56,8 @@ class LazyAtomsSequence(collections.abc.Sequence):
                 ncols=120,
                 desc=f"Loading atoms from {self._database}",
             ):
-                self.__dict__["atoms"][key] = database[key + 1].toatoms()
-
-    def __iter__(self):
-        """Enable iterating over the sequence. This will load all data at once"""
-        self._update_state_from_db(list(range(len(self))))
-        for idx in range(len(self)):
-            yield self[idx]
-
-    def __getitem__(self, item) -> typing.Union[ase.Atoms, AtomsList]:
-        """Get atoms
-
-        Parameters
-        ----------
-        item: int | list | slice
-            The identifier of the requested atoms to return
-
-        Returns
-        -------
-        Atoms | list[Atoms]
-
-        """
-        if isinstance(item, int):
-            # The most simple case
-            try:
-                return self.__dict__["atoms"][item]
-            except KeyError:
-                self._update_state_from_db([item])
-                return self.__dict__["atoms"][item]
-        # everything with lists
-        if isinstance(item, slice):
-            item = list(range(len(self)))[item]
-
-        try:
-            return [self.__dict__["atoms"][x] for x in item]
-        except KeyError:
-            self._update_state_from_db(item)
-            return [self.__dict__["atoms"][x] for x in item]
+                atoms.append(database[key + 1].toatoms())
+        return atoms[0] if isinstance(item, int) else atoms
 
     def __len__(self):
         """Get the len based on the db. This value is cached because
@@ -107,11 +69,8 @@ class LazyAtomsSequence(collections.abc.Sequence):
         return self._len
 
     def __repr__(self):
-        return f"{self.__class__.__name__}(db={self._database})"
-
-    def tolist(self) -> AtomsList:
-        """Convert sequence to a list of atoms objects"""
-        return list(self)
+        db_short = "/".join(self._database.parts[-3:])
+        return f"{self.__class__.__name__}(db='{db_short}')"
 
 
 class ZnAtoms(ZnTrackOption):
@@ -128,15 +87,38 @@ class ZnAtoms(ZnTrackOption):
         """Save value with ase.db.connect"""
         atoms: AtomsList = getattr(instance, self.name)
         file = self.get_filename(instance)
-        # file.parent.mkdir(exist_ok=True, parents=True)
+
         with ase.db.connect(file, append=False) as db:
             for atom in tqdm.tqdm(atoms, desc=f"Writing atoms to {file}"):
-                db.write(atom, group=instance.node_name)
+                _atom = atom.copy()
 
-    def get_data_from_files(self, instance) -> LazyAtomsSequence:
+                if atom.calc is not None:
+                    # Save properties to SinglePointCalculator
+                    properties = {}
+                    with contextlib.suppress(
+                        ase.calculators.singlepoint.PropertyNotImplementedError
+                    ):
+                        properties["energy"] = atom.get_potential_energy()
+                    with contextlib.suppress(
+                        ase.calculators.singlepoint.PropertyNotImplementedError
+                    ):
+                        properties["forces"] = atom.get_forces()
+                    with contextlib.suppress(
+                        ase.calculators.singlepoint.PropertyNotImplementedError
+                    ):
+                        properties["stress"] = atom.get_stress()
+
+                    if properties:
+                        calc = ase.calculators.singlepoint.SinglePointCalculator(
+                            atoms=_atom, **properties
+                        )
+                        _atom.calc = calc
+                db.write(_atom, group=instance.node_name)
+
+    def get_data_from_files(self, instance) -> znlib.utils.lazy.LazyList:
         """Load value with ase.db.connect"""
-        return LazyAtomsSequence(
-            database=self.get_filename(instance).resolve().as_posix()
+        return znlib.utils.lazy.LazyList(
+            ASEAtomsFromDB(database=self.get_filename(instance).resolve().as_posix())
         )
 
 

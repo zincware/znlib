@@ -79,6 +79,7 @@ def atoms_si8() -> ase.Atoms:
 
 @pytest.fixture()
 def cp2k_si8_input() -> dict:
+    # TODO write to file
     return {
         "global": {
             "project_name": "Si_bulk8",

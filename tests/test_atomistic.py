@@ -19,7 +19,7 @@ def test_AddData(proj_path, tetraeder_test_traj):
 
     loaded_data = znlib.atomistic.FileToASE.load()
 
-    assert isinstance(loaded_data.atoms, znlib.atomistic.ase.LazyAtomsSequence)
+    assert isinstance(loaded_data.atoms, znlib.utils.lazy.LazyList)
     assert isinstance(loaded_data.atoms[0], ase.Atoms)
     assert loaded_data.atoms.__dict__["atoms"] == {0: loaded_data.atoms[0]}
     assert isinstance(loaded_data.atoms[[0, 1]], list)

@@ -2,9 +2,11 @@
 import importlib.metadata
 import importlib.util
 
+from znlib import utils
+
 __version__ = importlib.metadata.version("znlib")
 
-__all__ = []
+__all__ = ["utils"]
 
 if importlib.util.find_spec("zntrack") is not None:
     from znlib import examples  # noqa: F401
