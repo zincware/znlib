@@ -22,21 +22,3 @@ Available zincware packages:
   ✗  znvis 
   ✗  symdet 
 ```
-
-Furthermore, `znlib` provides you with some example [ZnTrack](https://github.com/zincware/ZnTrack) Nodes.
-
-```python
-from znlib.examples import MonteCarloPiEstimator
-
-mcpi = MonteCarloPiEstimator(n_points=1000).write_graph(run=True)
-print(mcpi.load().estimate)
->>> 3.128
-```
-
-The idea of the `znlib` package is to provide a collection of [ZnTrack](https://github.com/zincware/ZnTrack) Nodes from all different fields of research.
-Every contribution is very welcome.
-For new Nodes:
-1. Fork this repository.
-2. Create a file under the directory `znlib/examples`
-3. Make a Pull request.
-
