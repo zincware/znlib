@@ -9,6 +9,12 @@ readme = "README.md"
 [tool.poetry.dependencies]
 python = ">=3.8,<4.0.0"
 colorama = "^0.4.5"
+zntrack = "^0.5.0"
+matplotlib = "^3.6.3"
+znslice = "^0.1.0"
+ase = "^3.22.1"
+tqdm = "^4.64.1"
+cp2k-input-tools = "^0.8.2"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.2.0"
