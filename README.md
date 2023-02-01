@@ -2,6 +2,7 @@
 ![PyTest](https://github.com/zincware/znlib/actions/workflows/pytest.yaml/badge.svg)
 [![PyPI version](https://badge.fury.io/py/znlib.svg)](https://badge.fury.io/py/znlib)
 [![ZnTrack](https://img.shields.io/badge/Powered%20by-ZnTrack-%23007CB0)](https://zntrack.readthedocs.io/en/latest/)
+[![zincware](https://img.shields.io/badge/Powered%20by-zincware-darkcyan)](https://github.com/zincware)
 
 # znlib
 This package provides you with a CLI to list your installed zincware libraries.
