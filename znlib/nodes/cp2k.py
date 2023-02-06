@@ -64,7 +64,7 @@ class CP2KYaml(Node):
         )
 
         cp2k_input_script = "\n".join(CP2KInputGenerator().line_iter(cp2k_input_dict))
-        with self.operating_directory(move_on=subprocess.CalledProcessError):
+        with self.operating_directory():
             ase.io.write(self.cp2k_directory / "atoms.xyz", atoms)
             input_file = self.cp2k_directory / "input.cp2k"
             input_file.write_text(cp2k_input_script)
