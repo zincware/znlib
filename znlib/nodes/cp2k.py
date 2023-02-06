@@ -69,4 +69,8 @@ class CP2KYaml(Node):
             input_file = self.cp2k_directory / "input.cp2k"
             input_file.write_text(cp2k_input_script)
 
-            subprocess.run(self.cp2k_bin, cwd=self.cp2k_directory, check=True)
+            subprocess.run(
+                [self.cp2k_bin, "-in", self.cp2k_directory / "input.cp2k"],
+                cwd=self.cp2k_directory,
+                check=True,
+            )
