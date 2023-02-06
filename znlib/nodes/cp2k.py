@@ -14,7 +14,7 @@ from zntrack import Node, dvc, meta, utils, zn
 class CP2KYaml(Node):
     """Node for running CP2K Single point calculations."""
 
-    cp2k_shell: str = meta.Text("cp2k_shell.ssmp")
+    cp2k_bin: str = meta.Text("cp2k.psmp")
     cp2k_params = dvc.params("cp2k.yaml")
 
     cp2k_directory: pathlib.Path = dvc.outs(utils.nwd / "cp2k")
@@ -69,4 +69,4 @@ class CP2KYaml(Node):
             input_file = self.cp2k_directory / "input.cp2k"
             input_file.write_text(cp2k_input_script)
 
-            subprocess.run(self.cp2k_shell, cwd=self.cp2k_directory, check=True)
+            subprocess.run(self.cp2k_bin, cwd=self.cp2k_directory, check=True)
