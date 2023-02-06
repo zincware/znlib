@@ -18,7 +18,6 @@ class CP2KYaml(Node):
     cp2k_params = dvc.params("cp2k.yaml")
 
     cp2k_directory: pathlib.Path = dvc.outs(utils.nwd / "cp2k")
-    input_files = dvc.deps()
 
     atoms_file = dvc.deps()  # TODO allow both, atoms file and atoms object
     index: int = zn.params(-1)
