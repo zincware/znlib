@@ -70,7 +70,8 @@ class CP2KYaml(Node):
             input_file.write_text(cp2k_input_script)
 
             subprocess.run(
-                [self.cp2k_bin, "-in", "input.cp2k"],
+                f"{self.cp2k_bin} -in input.cp2k",
                 cwd=self.cp2k_directory,
                 check=True,
+                shell=True
             )
