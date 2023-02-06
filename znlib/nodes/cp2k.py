@@ -11,7 +11,7 @@ from cp2k_input_tools.generator import CP2KInputGenerator
 from zntrack import Node, dvc, meta, utils, zn
 
 
-class CP2KSinglePoint(Node):
+class CP2KYaml(Node):
     """Node for running CP2K Single point calculations."""
 
     cp2k_shell: str = meta.Text("cp2k_shell.ssmp")
