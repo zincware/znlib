@@ -42,6 +42,28 @@ class CP2KSinglePoint(Node):
             "C": list(atoms.cell[2]),
         }
 
+        cp2k_input_dict["force_eval"]["DFT"]["XC"]["vdw_potential"]["pair_potential"][
+            "parameter_file_name"
+        ] = (
+            pathlib.Path(
+                cp2k_input_dict["force_eval"]["DFT"]["XC"]["vdw_potential"][
+                    "pair_potential"
+                ]["parameter_file_name"]
+            )
+            .resolve()
+            .as_posix()
+        )
+        cp2k_input_dict["force_eval"]["DFT"]["basis_set_file_name"] = (
+            pathlib.Path(cp2k_input_dict["force_eval"]["DFT"]["basis_set_file_name"])
+            .resolve()
+            .as_posix()
+        )
+        cp2k_input_dict["force_eval"]["DFT"]["potential_file_name"] = (
+            pathlib.Path(cp2k_input_dict["force_eval"]["DFT"]["potential_file_name"])
+            .resolve()
+            .as_posix()
+        )
+
         cp2k_input_script = "\n".join(CP2KInputGenerator().line_iter(cp2k_input_dict))
         with self.operating_directory(move_on=subprocess.CalledProcessError):
             ase.io.write(self.cp2k_directory / "atoms.xyz", atoms)
