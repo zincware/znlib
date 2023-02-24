@@ -3,10 +3,14 @@
 This interface is less restrictive than CP2K Single Point.
 """
 import pathlib
+import shutil
 import subprocess
 
 import ase.io
+import cp2k_output_tools
+import pandas as pd
 import yaml
+from ase.calculators.singlepoint import SinglePointCalculator
 from cp2k_input_tools.generator import CP2KInputGenerator
 from zntrack import Node, dvc, meta, utils, zn
 
@@ -16,6 +20,7 @@ class CP2KYaml(Node):
 
     cp2k_bin: str = meta.Text("cp2k.psmp")
     cp2k_params = dvc.params("cp2k.yaml")
+    wfn_restart: str = dvc.deps(None)
 
     cp2k_directory: pathlib.Path = dvc.outs(utils.nwd / "cp2k")
 
@@ -69,9 +74,36 @@ class CP2KYaml(Node):
             input_file = self.cp2k_directory / "input.cp2k"
             input_file.write_text(cp2k_input_script)
 
-            subprocess.run(
+            if self.wfn_restart is not None:
+                shutil.copy(self.wfn_restart, self.cp2k_directory / "cp2k-RESTART.wfn")
+            with subprocess.Popen(
                 f"{self.cp2k_bin} -in input.cp2k",
                 cwd=self.cp2k_directory,
-                check=True,
-                shell=True
-            )
+                shell=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+            ) as proc:
+                with open(self.cp2k_directory / "cp2k.log", "w") as file:
+                    for line in proc.stdout:
+                        file.write(line.decode("utf-8"))
+                        print(line.decode("utf-8"), end="")
+            if proc.returncode not in [0, None]:
+                raise RuntimeError(f"CP2K failed with return code {proc.returncode}:")
+
+    @property
+    def atoms(self):
+        """Return the atoms object."""
+        data = {}
+        with open(self.cp2k_directory / "cp2k.log", "r") as file:
+            for match in cp2k_output_tools.parse_iter(file.read()):
+                data.update(match)
+
+        forces_df = pd.DataFrame(data["forces"]["atomic"]["per_atom"])
+        forces = forces_df[["x", "y", "z"]].values
+
+        atoms = ase.io.read(self.cp2k_directory / "atoms.xyz")
+        atoms.calc = SinglePointCalculator(
+            atoms=atoms, energy=data["energies"]["total force_eval"], forces=forces
+        )
+
+        return atoms
