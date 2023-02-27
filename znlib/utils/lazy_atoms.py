@@ -17,7 +17,7 @@ class ASEAtomsFromDB(collections.abc.Sequence):
     """ASE Atoms from ASE DB loading."""
 
     def __init__(self, database: str, threshold: int = 100):
-        """Default __init__.
+        """Construct class with a default __init__.
 
         Parameters
         ----------
