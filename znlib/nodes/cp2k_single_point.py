@@ -13,17 +13,37 @@ from zntrack import Node, dvc, meta, utils, zn
 
 
 class CP2KSinglePoint(Node):
-    """Node for running CP2K Single point calculations."""
+    """
+    Node for running CP2K Single point calculations.
 
+    Args:
+        cp2k_shell: name of the CP2K-shell used.
+        cp2k_params: inputfile for CP2K.
+        atoms: ase atoms object.
+        atoms_file: if atoms are provided through
+            a file and not a node, the path should be
+            declared here.
+        output_file: path to the output file
+        cp2k_directory: path to cp2k output directory
+
+
+    Returns:
+        None
+    """
     cp2k_shell: str = meta.Text("cp2k_shell.ssmp")
     cp2k_params = dvc.params("cp2k.yaml")
 
-    atoms = zn.deps()
+    atoms = zn.deps(None)
+    atoms_file = dvc.deps(None)
+
     output_file = dvc.outs(utils.nwd / "atoms.extxyz")
     cp2k_directory = dvc.outs(utils.nwd / "cp2k")
 
     def run(self):
         """ZnTrack run method."""
+        if self.atoms_file != None:
+            self.atoms = list(ase.io.iread(self.atoms_file))
+
         self.cp2k_directory.mkdir(exist_ok=True)
         with open(self.cp2k_params, "r") as file:
             cp2k_input_dict = yaml.safe_load(file)
@@ -77,7 +97,6 @@ class CP2KSinglePoint(Node):
                 atom.calc = calculator
                 atom.get_potential_energy()
                 ase.io.write(self.output_file.as_posix(), atom, append=True)
-
     @functools.cached_property
     def results(self):
         """Get the Atoms list."""
