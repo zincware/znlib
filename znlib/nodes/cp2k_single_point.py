@@ -13,8 +13,7 @@ from zntrack import Node, dvc, meta, utils, zn
 
 
 class CP2KSinglePoint(Node):
-    """
-    Node for running CP2K Single point calculations.
+    """Node for running CP2K Single point calculations.
 
     Args:
         cp2k_shell: name of the CP2K-shell used.
@@ -27,9 +26,11 @@ class CP2KSinglePoint(Node):
         cp2k_directory: path to cp2k output directory
 
 
-    Returns:
+    Returns
+    -------
         None
     """
+
     cp2k_shell: str = meta.Text("cp2k_shell.ssmp")
     cp2k_params = dvc.params("cp2k.yaml")
 
@@ -41,7 +42,7 @@ class CP2KSinglePoint(Node):
 
     def run(self):
         """ZnTrack run method."""
-        if self.atoms_file != None:
+        if self.atoms_file is not None:
             self.atoms = list(ase.io.iread(self.atoms_file))
 
         self.cp2k_directory.mkdir(exist_ok=True)
@@ -97,6 +98,7 @@ class CP2KSinglePoint(Node):
                 atom.calc = calculator
                 atom.get_potential_energy()
                 ase.io.write(self.output_file.as_posix(), atom, append=True)
+
     @functools.cached_property
     def results(self):
         """Get the Atoms list."""
