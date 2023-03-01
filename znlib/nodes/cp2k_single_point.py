@@ -40,10 +40,8 @@ class CP2KSinglePoint(Node):
     output_file = dvc.outs(utils.nwd / "atoms.extxyz")
     cp2k_directory = dvc.outs(utils.nwd / "cp2k")
 
-    def run(self):
-        """ZnTrack run method."""
+    def _post_init_(self):
         # Check if atoms were provided:
-
         if self.atoms is None and self.atoms_file is None:
             raise TypeError("Both atoms and atoms_file mustn't be None")
         if self.atoms is not None and self.atoms_file is not None:
@@ -51,6 +49,8 @@ class CP2KSinglePoint(Node):
                 "Atoms and atoms_file are mutually exclusive. Please only provide one"
             )
 
+    def run(self):
+        """ZnTrack run method."""
         # read atoms from file, if file path is provided
         if self.atoms_file is not None:
             self.atoms = list(ase.io.iread(self.atoms_file))
