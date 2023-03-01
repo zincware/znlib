@@ -42,6 +42,16 @@ class CP2KSinglePoint(Node):
 
     def run(self):
         """ZnTrack run method."""
+        # Check if atoms were provided:
+
+        if self.atoms is None and self.atoms_file is None:
+            raise TypeError("Both atoms and atoms_file mustn't be None")
+        if self.atoms is not None and self.atoms_file is not None:
+            raise TypeError(
+                "Atoms and atoms_file are mutually exclusive. Please only provide one"
+            )
+
+        # read atoms from file, if file path is provided
         if self.atoms_file is not None:
             self.atoms = list(ase.io.iread(self.atoms_file))
 
